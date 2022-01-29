@@ -213,7 +213,7 @@ impl OneSecEncoder {
     fn new(config: EncoderConfig) -> Result<Self, openh264::Error> {
         Ok(Self {
             config,
-            encoder: Encoder::with_config(config.clone())?,
+            encoder: Encoder::with_config(config)?,
             encodes: 0,
         })
     }
