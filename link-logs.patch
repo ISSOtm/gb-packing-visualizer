@@ -1,0 +1,21 @@
+diff --git a/src/link/assign.c b/src/link/assign.c
+index dfad2b8..0b9f001 100644
+--- a/src/link/assign.c
++++ b/src/link/assign.c
+@@ -192,6 +192,7 @@ static struct FreeSpace *getPlacement(struct Section const *section,
+ 
+ 		/* Process locations in that bank */
+ 		while (space) {
++			printf("%02x:%04x\n", location->bank, location->address);
+ 			/* If that location is OK, return it */
+ 			if (isLocationSuitable(section, space, location))
+ 				return space;
+@@ -272,6 +273,8 @@ static void placeSection(struct Section *section)
+ 		return;
+ 	}
+ 
++	printf("[%s @ %02" PRIx32 ":%04" PRIx16 " & %" PRIu16 " + %" PRIu16 "] %" PRIu16 " %s\n", typeNames[section->type], section->bank, section->org, section->alignMask, section->alignOfs, section->size, section->name);
++
+ 	/*
+ 	 * Place section using first-fit decreasing algorithm
+ 	 * https://en.wikipedia.org/wiki/Bin_packing_problem#First-fit_algorithm
