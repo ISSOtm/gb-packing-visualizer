@@ -2,7 +2,16 @@
 
 A Rust program for visualizing how sections get packed into your Game Boy ROM.
 
-<video controls muted preload="auto" src="https://raw.githubusercontent.com/wiki/ISSOtm/gb-packing-visualizer/rhythm_land.mp4"></video>
+https://user-images.githubusercontent.com/15271137/151644867-76903667-6577-41f5-be25-61c593f2d343.mp4
+
+Each column represents a ROM bank, with the leftmost being ROM0 and the rest ROMX.
+The moving red box is each attempt RGBLINK makes to assign a section, the green is space that gets used, and white is free space.
+
+Things you may or may not notice:
+- RGBLINK begins with all manually-assigned sections
+- RGBLINK assigns all ROM0 sections before it assigns any in ROMX
+- Even if a section is manually assigned, RGBLINK begins by attempting to assign it at the beginning of its bank, and then does the right thing (it's an internal logic quirk, but it's accounted for so that's fine)
+- ROM is typically very well used, especially if there are many smaller sections. Splitting sections when possible is a good thing!
 
 ## Caveats
 
@@ -43,3 +52,10 @@ Generating the log requires accessing some of RGBLINK's internal state, so you m
 8. Optional, but **strongly recommended**: pipe the video through [FFMpeg](https://ffmpeg.org) (`ffmpeg -i vid.mp4 vid_better.mp4`), which should yield a smaller file that looks just the same.
    FFMpeg being very good at its job, this should be significantly faster than the rendering.
 9. Profit!
+
+## License
+
+[MPL 2.0](LICENSE).
+
+Contributions are appreciated—especially if you have any idea what to do of those "TODO" comments in the MP4 encoding.
+I couldn't find any documentation about those.
