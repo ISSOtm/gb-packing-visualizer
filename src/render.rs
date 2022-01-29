@@ -2,8 +2,8 @@ use crate::{Location, MemType, Section, Sequence};
 use mp4::{
     AvcConfig, FourCC, MediaConfig, Mp4Config, Mp4Sample, Mp4Writer, TrackConfig, TrackType,
 };
-use openh264::encoder::{Encoder, EncoderConfig};
-use openh264::formats::RBGYUVConverter;
+use openh264::encoder::{EncodedBitStream, Encoder, EncoderConfig};
+use openh264::formats::{RBGYUVConverter, YUVSource};
 use std::cmp;
 use std::convert::{TryFrom, TryInto};
 use std::error::Error;
@@ -203,12 +203,43 @@ impl Canvas {
     }
 }
 
+struct OneSecEncoder {
+    config: EncoderConfig,
+    encoder: Encoder,
+    encodes: u8,
+}
+
+impl OneSecEncoder {
+    fn new(config: EncoderConfig) -> Result<Self, openh264::Error> {
+        Ok(Self {
+            config,
+            encoder: Encoder::with_config(config.clone())?,
+            encodes: 0,
+        })
+    }
+
+    fn encode<T: YUVSource>(
+        &mut self,
+        source: &T,
+    ) -> Result<EncodedBitStream<'_>, openh264::Error> {
+        if self.encodes == 60 {
+            self.encodes = 0;
+            self.encoder = Encoder::with_config(self.config)?;
+        }
+
+        let encoded = self.encoder.encode(source);
+
+        self.encodes += 1;
+        encoded
+    }
+}
+
 pub fn render(sequence: &Sequence, out_path: &Path) -> Result<(), RenderError> {
     eprint!("Rendering...\r");
 
     let out = BufWriter::new(File::create(out_path)?);
     let mut canvas = Canvas::new(sequence.nb_banks);
-    let mut encoder = Encoder::with_config(EncoderConfig::new(canvas.width(), canvas.height()))?;
+    let mut encoder = OneSecEncoder::new(EncoderConfig::new(canvas.width(), canvas.height()))?;
     let section = |section_id| &sequence.sections[section_id];
 
     let fcc = |code: &[u8; 4]| FourCC { value: *code };
